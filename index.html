@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحلیل هوشمند پروژه دکوراسیون داخلی</title>
+    <style>
+        /* CSS پایه */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #2980b9;
+            --bg: #ecf0f1;
+            --white: #ffffff;
+            --border: #bdc3c7;
+        }
+        * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
+        body { background-color: var(--bg); margin: 0; padding: 20px; color: var(--primary); }
+        
+        /* لی‌اوت اصلی */
+        .dashboard { display: flex; gap: 20px; max-width: 1400px; margin: auto; }
+        .main-panel { flex: 1; background: var(--white); padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        /* فرم‌ها و هدر */
+        h1, h2, h3 { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-top: 0; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .full-width { grid-column: 1 / -1; } /* برای گرفتن کل عرض */
+        
+        label { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        input[type=text], input[type=number], input[type=file], textarea { 
+            padding: 8px; border: 1px solid var(--border); border-radius: 4px; outline: none; font-family: inherit; 
+        }
+        textarea { resize: vertical; line-height: 1.5; }
+        input:focus, textarea:focus { border-color: var(--accent); }
+        
+        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #1f6391; }
+        
+        /* استایل‌های جدول پیش‌فاکتور */
+        .invoice-section { margin-top: 40px; }
+        .invoice-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+        th, td { border: 1px solid var(--border); padding: 10px; text-align: center; }
+        th { background-color: var(--primary); color: white; }
+        .table-input { width: 100%; border: none; text-align: center; background: transparent; padding: 5px; }
+        .table-input:focus { background: #f0f8ff; outline: none; }
+        .totals-box { width: 300px; margin-right: auto; border: 1px solid var(--border); padding: 15px; border-radius: 4px; }
+        .totals-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
+        
+        /* پنل چت شناور */
+        .chat-panel { width: 350px; background: var(--white); border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: calc(100vh - 40px); position: sticky; top: 20px; }
+        .chat-header { background: var(--primary); color: white; padding: 15px; border-radius: 8px 8px 0 0; text-align: center; font-weight: bold; }
+        .chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; }
+        .msg { padding: 10px; border-radius: 8px; max-width: 90%; font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+        .msg.user { background: var(--accent); color: white; align-self: flex-start; border-bottom-right-radius: 0; }
+        .msg.bot { background: #e0e0e0; color: #333; align-self: flex-end; border-bottom-left-radius: 0; }
+        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+        .chat-input-area input { flex: 1; }
+        
+        /* Loader */
+        .loader { display: none; margin-top: 10px; font-size: 14px; color: var(--accent); font-weight: bold; }
+
+        /* استایل‌های پرینت */
+        @media print {
+            body { background: white; padding: 0; }
+            .chat-panel, .no-print { display: none !important; }
+            .dashboard { display: block; max-width: 100%; }
+            .main-panel { box-shadow: none; border: none; padding: 0; }
+            input, textarea { border: none !important; background: transparent !important; }
+            table { font-size: 12px; }
+        }
+        
+        * {
+  box-sizing: border-box;
+}
+
+/* Create two equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 50%;
+  padding: 10px;
+  height: 300px; /* Should be removed. Only for demonstration */
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+  .column {
+    width: 100%;
+  }
+}
+        
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="main-panel">
+        <div class="no-print">
+<div class="row">
+  <div class="column" style="background-color:transparent;height:90px;width:auto;">
+<img src="https://tolica.ir/ztheme_front/img/logo-black.png" style="height:85px;width:auto;float:left">
+  </div>
+</div>            
+            <h3>۱. مشخصات پروژه</h3>
+            <div class="form-grid">
+                <div class="form-group"><label>نام خریدار / کارفرما:</label><input type="text" id="buyerName" placeholder="نام را وارد کنید..."></div>
+                <div class="form-group"><label>نام پروژه:</label><input type="text" id="projectName" placeholder="عنوان پروژه..."></div>
+                <div class="form-group"><label>تاریخ صدور:</label><input type="text" id="invoiceDate" placeholder="مثال: 1403/05/12"></div>
+            </div>
+
+            <h3>۲. اطلاعات فنی، تصاویر و توضیحات</h3>
+            <div class="form-grid">
+                <div class="form-group"><label>طول (متر):</label><input type="number" id="dimLength" placeholder="مثلاً 5"></div>
+                <div class="form-group"><label>عرض (متر):</label><input type="number" id="dimWidth" placeholder="مثلاً 4"></div>
+                <div class="form-group"><label>ارتفاع (متر):</label><input type="number" id="dimHeight" placeholder="مثلاً 2.8"></div>
+                
+                <div class="form-group">
+                    <label>تصاویر رندر یا پلان (امکان انتخاب چند فایل):</label>
+                    <input type="file" id="designImages" accept="image/*" multiple>
+                </div>
+
+                <div class="form-group full-width">
+                <div id="previewContainer"></div>
+                    <label>توضیحات کلی پروژه / راهنمای مدل:</label>
+                    <textarea id="projectDescription" rows="3" placeholder="توضیحات دلخواه خود درباره پلان، سبک دکوراسیون، یا مواردی که مدل باید به آن‌ها دقت کند را اینجا بنویسید..."></textarea>
+                </div>
+            </div>
+            
+            <button onclick="analyzeProject()">تحلیل هوشمند تصویر و تولید پیش‌فاکتور</button>
+            <div id="loader" class="loader">مدل در حال تحلیل دقیق، تفکیک متریال‌ها و نوشتن گزارش است. لطفاً کمی صبر کنید...</div>
+        </div>
+
+        <div class="invoice-section" id="invoiceSection" style="display: none;">
+          <img src="https://tolica.ir/ztheme_front/img/logo-black.png" style="float:left;height:150px;width:auto"><h2>پیش‌فاکتور خدمات و متریال دکوراسیون</h2>
+            <div class="invoice-header">
+                <div><strong>خریدار:</strong> <span id="lblBuyer"></span></div>
+                <div><strong>پروژه:</strong> <span id="lblProject"></span></div>
+                <div><strong>تاریخ:</strong> <span id="lblDate"></span></div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%">ردیف</th>
+                        <th style="width: 30%">شرح کالا / متریال</th>
+                        <th style="width: 15%">مقدار / واحد</th>
+                        <th style="width: 15%">فی (تومان)</th>
+                        <th style="width: 10%">تخفیف (تومان)</th>
+                        <th style="width: 10%">مالیات (%)</th>
+                        <th style="width: 15%">جمع کل (تومان)</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceBody">
+                </tbody>
+            </table>
+
+            <div class="totals-box">
+                <div class="totals-row"><span>جمع خام:</span><span id="subTotal">0</span></div>
+                <div class="totals-row"><span>جمع تخفیف:</span><span id="totalDiscount">0</span></div>
+                <div class="totals-row"><span>جمع مالیات:</span><span id="totalTax">0</span></div>
+                <hr>
+                <div class="totals-row" style="color:var(--accent); font-size:18px;"><span>مبلغ نهایی:</span><span id="grandTotal">0</span></div>
+            </div>
+            
+            <button class="no-print" style="margin-top:20px; background:#27ae60;" onclick="window.print()">🖨 چاپ پیش‌فاکتور</button>
+        </div>
+    </div>
+
+    <div class="chat-panel no-print">
+        <div class="chat-header">دستیار هوشمند پروژه</div>
+        <div class="chat-box" id="chatBox">
+            <div class="msg bot">سلام! من دستیار هوشمند شما هستم. تصویر و ابعاد را ثبت کنید تا تحلیل را شروع کنیم.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="پیام خود را بنویسید..." onkeypress="handleChatEnter(event)">
+            <button onclick="sendMessage()">ارسال</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- بخش تحلیل تصویر و پیش فاکتور ---
+    async function analyzeProject() {
+        const fileInput = document.getElementById('designImages');
+        const previewContainer = document.getElementById("previewContainer");
+
+        if (fileInput.files.length === 0) {
+            alert('لطفاً حداقل یک تصویر (رندر یا پلان) را انتخاب کنید.');
+            return;
+        }
+
+        document.getElementById('loader').style.display = 'block';
+        
+        // انتقال مقادیر به هدر پیش‌فاکتور
+        document.getElementById('lblBuyer').innerText = document.getElementById('buyerName').value || 'ثبت نشده';
+        document.getElementById('lblProject').innerText = document.getElementById('projectName').value || 'ثبت نشده';
+        document.getElementById('lblDate').innerText = document.getElementById('invoiceDate').value || '-';
+
+        const formData = new FormData();
+        
+        // افزودن تمام عکس‌ها به formData
+        for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append("images", fileInput.files[i]);
+			
+			    const file = fileInput.files[i];
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    img.width = 150;
+    img.style.margin = "10px";
+    img.style.borderRadius = "8px";
+    previewContainer.appendChild(img);
+
+			
+        }
+        //---
+        formData.append("length", document.getElementById('dimLength').value);
+        formData.append("width", document.getElementById('dimWidth').value);
+        formData.append("height", document.getElementById('dimHeight').value);
+        formData.append("description", document.getElementById('projectDescription').value); // ارسال توضیحات
+
+        try {
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                populateTable(result.data.materials);
+                document.getElementById('invoiceSection').style.display = 'block';
+                
+                // نمایش تحلیل جامع در چت باکس
+                const analysisText = "✅ **گزارش تحلیل پروژه:**\n\n" + result.data.analysis;
+                appendMessage('bot', analysisText);
+                chatHistory.push({ role: 'assistant', content: analysisText });
+                
+            } else {
+                alert('خطا در تحلیل: ' + JSON.stringify(result));
+            }
+        } catch (error) {
+            alert('خطای ارتباط با سرور: ' + error.message);
+        } finally {
+            document.getElementById('loader').style.display = 'none';
+        }
+    }
+
+    function populateTable(materials) {
+        const tbody = document.getElementById('invoiceBody');
+        tbody.innerHTML = ''; 
+
+        materials.forEach((mat, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><input type="text" class="table-input" value="${mat.name}"></td>
+                <td><input type="text" class="table-input" value="${mat.quantity}"></td>
+                <td><input type="number" class="table-input price-input" value="0" oninput="calculateInvoice()"></td>
+                <td><input type="number" class="table-input discount-input" value="0" oninput="calculateInvoice()"></td>
+                <td><input type="number" class="table-input tax-input" value="9" oninput="calculateInvoice()"></td>
+                <td class="row-total">0</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        calculateInvoice();
+    }
+
+    function formatCurrency(num) {
+        return Number(Math.round(num)).toLocaleString('fa-IR');
+    }
+
+    function calculateInvoice() {
+        const rows = document.querySelectorAll('#invoiceBody tr');
+        let subTotal = 0;
+        let totalDiscount = 0;
+        let totalTax = 0;
+
+        rows.forEach(row => {
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+            const taxPercent = parseFloat(row.querySelector('.tax-input').value) || 0;
+
+            const afterDiscount = Math.max(0, price - discount);
+            const taxAmount = afterDiscount * (taxPercent / 100);
+            const finalRowPrice = afterDiscount + taxAmount;
+
+            row.querySelector('.row-total').innerText = formatCurrency(finalRowPrice);
+
+            subTotal += price;
+            totalDiscount += discount;
+            totalTax += taxAmount;
+        });
+
+        const grandTotal = subTotal - totalDiscount + totalTax;
+
+        document.getElementById('subTotal').innerText = formatCurrency(subTotal);
+        document.getElementById('totalDiscount').innerText = formatCurrency(totalDiscount);
+        document.getElementById('totalTax').innerText = formatCurrency(totalTax);
+        document.getElementById('grandTotal').innerText = formatCurrency(grandTotal);
+    }
+
+    // --- بخش چت بات ---
+    let chatHistory = [];
+
+    function handleChatEnter(e) {
+        if (e.key === 'Enter') sendMessage();
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        appendMessage('user', text);
+        input.value = '';
+
+        const pName = document.getElementById('projectName').value || 'نامشخص';
+        const l = document.getElementById('dimLength').value || 'وارد نشده';
+        const w = document.getElementById('dimWidth').value || 'وارد نشده';
+        const h = document.getElementById('dimHeight').value || 'وارد نشده';
+        const desc = document.getElementById('projectDescription').value || 'توضیحی ثبت نشده';
+        const projectContext = `نام پروژه: ${pName} | ابعاد: طول ${l}، عرض ${w}، ارتفاع ${h} | توضیحات کاربر: ${desc}`;
+
+        const formData = new FormData();
+        formData.append('message', text);
+        formData.append('memory_limit', '10');
+        formData.append('history', JSON.stringify(chatHistory));
+        formData.append('project_context', projectContext); 
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                appendMessage('bot', data.response);
+                chatHistory.push({ role: 'user', content: text });
+                chatHistory.push({ role: 'assistant', content: data.response });
+            }
+        } catch (error) {
+            appendMessage('bot', 'خطا در برقراری ارتباط با دستیار هوشمند.');
+        }
+    }
+
+    function appendMessage(sender, text) {
+        const chatBox = document.getElementById('chatBox');
+        const div = document.createElement('div');
+        div.className = `msg ${sender}`;
+        // تبدیل خطوط جدید به تگ br برای نمایش بهتر
+        div.innerHTML = text.replace(/\n/g, '<br>');
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
